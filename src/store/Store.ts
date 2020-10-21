@@ -1,35 +1,30 @@
 import { action, makeAutoObservable } from 'mobx';
 
 import { mockItems } from './mockData';
-
-export type Item = {
-  id: number,
-  text: string,
-};
+import Strategy from './models/Strategy';
+import { MemoryBasedStrategy } from './strategies/MemoryBasedStrategy';
 
 class Store {
-  private _items: Item[] = [];
+  private strategy: Strategy;
 
   get items() {
-    return this._items;
+    return this.strategy.items;
   }
 
-  constructor(items: Item[]) {
+  constructor(strategy: Strategy) {
     makeAutoObservable(this, {
       moveItem: action.bound,
     });
-    this._items = items;
+    this.strategy = strategy;
+  }
+
+  setStratagy(strategy: Strategy) {
+    this.strategy = strategy;
   }
 
   moveItem(itemId: number, to: number) {
-    const itemIndex = this._items.findIndex(({ id }) => id === itemId);
-    const items = Array.from(this._items);
-
-    items.splice(itemIndex, 1);
-    items.splice(to, 0, this._items[itemIndex]);
-    
-    this._items = items;
+    this.strategy.moveItem(itemId, to);
   }
 }
 
-export const store = new Store(mockItems);
+export const store = new Store(new MemoryBasedStrategy(mockItems));
