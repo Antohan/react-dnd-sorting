@@ -1,8 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
+import { useDrop } from 'react-dnd';
+import { observer } from 'mobx-react-lite';
 
 import { Card } from './Card';
 import { ItemType } from '../ItemType';
-import { useDrop } from 'react-dnd';
+import { store } from '../store/Store';
 
 const style = {
   display: 'flex',
@@ -14,47 +16,24 @@ type ContainerProps = {
 /**
  * Container component.
  */
-export const Container: React.FC<ContainerProps> = (props) => {
-  const [cards, setCards] = useState([
-    { id: 1, text: 'Item 1' },
-    { id: 2, text: 'Item 2' },
-    { id: 3, text: 'Item 3' },
-    { id: 4, text: 'Item 4' },
-    { id: 5, text: 'Item 5' },
-  ]);
+export const Container: React.FC<ContainerProps> = observer((props) => {
+  const { items, moveItem } = store;
 
-  const findCard = useCallback((id: number) => {
-    const card = cards.filter((c) => c.id === id)[0];
-
-    return {
-      card,
-      index: cards.indexOf(card),
-    }
-  }, [cards]);
+  const findIndexById = useCallback(
+    (id: number) => items.findIndex(item => item.id === id),
+    [items],
+  );
 
   const [, drop] = useDrop({ accept: ItemType.CARD });
 
-  const moveCard = useCallback(
-    (id: number, atIndex: number) => {
-      const { card, index } = findCard(id);
-      const newList = Array.from(cards);
-      newList.splice(index, 1);
-      newList.splice(atIndex, 0, card);
-      console.log(newList.map(({ id }) => id));
-
-      setCards(newList);
-    },
-    [cards, findCard],
-  );
-
-  const renderCard = cards.map((card, index) => {
+  const renderCard = items.map((card) => {
     return (
       <Card
         key={card.id}
         id={card.id}
         text={card.text}
-        moveCard={moveCard}
-        findCard={findCard}
+        moveCard={moveItem}
+        findIndex={findIndexById}
       />
     );
   });
@@ -67,7 +46,7 @@ export const Container: React.FC<ContainerProps> = (props) => {
       {renderCard}
     </div>
   );
-};
+});
 
 Container.defaultProps = {
 };

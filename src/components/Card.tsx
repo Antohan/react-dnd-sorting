@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+
 import { ItemType } from '../ItemType';
 
 const style = {
@@ -16,7 +17,7 @@ type CardProps = {
   id: number,
   text: string,
   moveCard: (id: number, to: number) => void,
-  findCard: (id: number) => { index: number },
+  findIndex: (id: number) => number,
 };
 
 interface Item {
@@ -29,8 +30,8 @@ interface Item {
  * Card component.
  */
 export const Card: React.FC<CardProps> = (props) => {
-  const { id, text, moveCard, findCard } = props;
-  const originalIndex = findCard(id).index;
+  const { id, text, moveCard, findIndex } = props;
+  const originalIndex = findIndex(id);
 
   const [{ isDragging }, drag] = useDrag({
     item: { type: ItemType.CARD, id, originalIndex },
@@ -52,7 +53,7 @@ export const Card: React.FC<CardProps> = (props) => {
     canDrop: () => false,
     hover({ id: draggedId }: Item) {
       if (draggedId !== id) {
-        const { index: overIndex } = findCard(id);
+        const overIndex = findIndex(id);
         moveCard(draggedId, overIndex);
       }
     },
